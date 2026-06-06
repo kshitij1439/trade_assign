@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import api from '../api/client';
+import { registerSchema, type RegisterInput } from '../lib/schemas';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -8,31 +11,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { toast } from 'sonner';
 
 export default function Register() {
-  const [form, setForm] = useState({ name: '', email: '', password: '', address: '' });
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm(f => ({ ...f, [k]: e.target.value }));
+  const { register, handleSubmit, formState: { errors } } = useForm<RegisterInput>({
+    resolver: zodResolver(registerSchema),
+  });
 
-  const validate = (): boolean => {
-    const errs: Record<string, string> = {};
-    if (form.name.length < 20 || form.name.length > 60) errs.name = 'Name must be 20-60 characters';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = 'Invalid email format';
-    if (!/^(?=.*[A-Z])(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,16}$/.test(form.password)) errs.password = 'Password must be 8-16 chars, 1 uppercase, 1 special character';
-    if (form.address.length > 400) errs.address = 'Address must be max 400 characters';
-    if (!form.address) errs.address = 'Address is required';
-    setErrors(errs);
-    return Object.keys(errs).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validate()) return;
+  const onSubmit = async (data: RegisterInput) => {
     setLoading(true);
     try {
-      await api.post('/auth/register', form);
+      await api.post('/auth/register', data);
       toast.success('Account created! Please sign in.');
       navigate('/login');
     } catch (err: any) {
@@ -49,27 +38,27 @@ export default function Register() {
           <CardTitle className="text-2xl text-center">Create Account</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
               <Label>Full Name (20-60 chars)</Label>
-              <Input value={form.name} onChange={set('name')} required />
-              {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
+              <Input {...register('name')} />
+              {errors.name && <p className="text-xs text-red-500">{errors.name.message}</p>}
             </div>
             <div className="space-y-2">
               <Label>Email</Label>
-              <Input type="email" value={form.email} onChange={set('email')} required />
-              {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
+              <Input type="email" {...register('email')} />
+              {errors.email && <p className="text-xs text-red-500">{errors.email.message}</p>}
             </div>
             <div className="space-y-2">
               <Label>Password</Label>
-              <Input type="password" value={form.password} onChange={set('password')} required />
+              <Input type="password" {...register('password')} />
               <p className="text-xs text-gray-500">8-16 chars, 1 uppercase, 1 special character</p>
-              {errors.password && <p className="text-xs text-red-500">{errors.password}</p>}
+              {errors.password && <p className="text-xs text-red-500">{errors.password.message}</p>}
             </div>
             <div className="space-y-2">
               <Label>Address (max 400 chars)</Label>
-              <Input value={form.address} onChange={set('address')} required />
-              {errors.address && <p className="text-xs text-red-500">{errors.address}</p>}
+              <Input {...register('address')} />
+              {errors.address && <p className="text-xs text-red-500">{errors.address.message}</p>}
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Creating...' : 'Create Account'}

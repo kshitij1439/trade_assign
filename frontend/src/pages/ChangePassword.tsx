@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { changePasswordSchema, type ChangePasswordInput } from '../lib/schemas';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -10,22 +13,18 @@ import { toast } from 'sonner';
 import Navbar from '../components/Navbar';
 
 export default function ChangePassword() {
-  const [newPassword, setNewPassword] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!/^(?=.*[A-Z])(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,16}$/.test(newPassword)) {
-      setError('Password must be 8-16 chars, with 1 uppercase and 1 special character');
-      return;
-    }
-    setError('');
+  const { register, handleSubmit, formState: { errors } } = useForm<ChangePasswordInput>({
+    resolver: zodResolver(changePasswordSchema),
+  });
+
+  const onSubmit = async (data: ChangePasswordInput) => {
     setLoading(true);
     try {
-      await api.patch('/auth/password', { newPassword });
+      await api.patch('/auth/password', data);
       toast.success('Password updated successfully');
       if (user?.role === 'ADMIN') navigate('/admin');
       else if (user?.role === 'STORE_OWNER') navigate('/owner');
@@ -46,12 +45,12 @@ export default function ChangePassword() {
             <CardTitle>Change Password</CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="space-y-2">
                 <Label>New Password</Label>
-                <Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required />
+                <Input type="password" {...register('newPassword')} />
                 <p className="text-xs text-gray-500">8-16 chars, 1 uppercase, 1 special character</p>
-                {error && <p className="text-xs text-red-500">{error}</p>}
+                {errors.newPassword && <p className="text-xs text-red-500">{errors.newPassword.message}</p>}
               </div>
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? 'Updating...' : 'Update Password'}
