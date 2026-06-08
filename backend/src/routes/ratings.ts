@@ -6,6 +6,29 @@ import { AuthRequest } from '../types';
 const router = Router();
 router.use(authenticate, authorize('NORMAL_USER'));
 
+/**
+ * @swagger
+ * /ratings:
+ *   post:
+ *     summary: Submit a rating for a store
+ *     tags: [Ratings]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               storeId:
+ *                 type: number
+ *               value:
+ *                 type: number
+ *     responses:
+ *       201:
+ *         description: Rating submitted
+ */
 router.post('/', async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { storeId, value } = req.body;

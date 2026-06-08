@@ -6,6 +6,18 @@ import { AuthRequest } from '../types';
 const router = Router();
 router.use(authenticate, authorize('STORE_OWNER'));
 
+/**
+ * @swagger
+ * /store-owner/dashboard:
+ *   get:
+ *     summary: Get store owner dashboard
+ *     tags: [Store Owner]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Dashboard stats
+ */
 router.get('/dashboard', async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const store = await prisma.store.findUnique({

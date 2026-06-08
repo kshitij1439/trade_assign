@@ -126,7 +126,7 @@ PORT=3000
 
 **Frontend (.env)**
 ```
-VITE_API_URL=http://localhost:3000/api
+VITE_API_URL=http://localhost:3000/api/v1
 ```
 
 ## Database Schema
@@ -150,24 +150,44 @@ Rating (id, value, userId, storeId, createdAt, updatedAt)
 ## API Endpoints
 
 ### Auth
-- `POST /api/auth/register` — Register new user
-- `POST /api/auth/login` — Login
-- `PATCH /api/auth/password` — Update password (authenticated)
+- `POST /api/v1/auth/register` — Register new user
+- `POST /api/v1/auth/login` — Login
+- `PATCH /api/v1/auth/password` — Update password (authenticated)
 
 ### Admin (requires ADMIN role)
-- `GET /api/admin/stats` — Dashboard stats
-- `GET /api/admin/users` — List users (with filters & sorting)
-- `GET /api/admin/users/:id` — User details
-- `POST /api/admin/users` — Create user
-- `GET /api/admin/stores` — List stores (with filters & sorting)
-- `POST /api/admin/stores` — Create store
+- `GET /api/v1/admin/stats` — Dashboard stats
+- `GET /api/v1/admin/users` — List users (with filters & sorting)
+- `GET /api/v1/admin/users/:id` — User details
+- `POST /api/v1/admin/users` — Create user
+- `GET /api/v1/admin/stores` — List stores (with filters & sorting)
+- `POST /api/v1/admin/stores` — Create store
 
 ### Stores (requires NORMAL_USER role)
-- `GET /api/stores` — List stores with user's rating
+- `GET /api/v1/stores` — List stores with user's rating
 
 ### Ratings (requires NORMAL_USER role)
-- `POST /api/ratings` — Submit rating
-- `PATCH /api/ratings/:id` — Update rating
+- `POST /api/v1/ratings` — Submit rating
+- `PATCH /api/v1/ratings/:id` — Update rating
 
 ### Store Owner (requires STORE_OWNER role)
-- `GET /api/store-owner/dashboard` — Owner dashboard
+- `GET /api/v1/store-owner/dashboard` — Owner dashboard
+
+## API Documentation
+
+Swagger API documentation is available when the server is running at:
+`http://localhost:3000/api/v1/docs`
+
+## Scalability & Architecture Note
+
+To ensure the backend system can scale seamlessly as user load increases, the following architecture strategies can be applied:
+
+1. **Microservices Architecture:** 
+   We can split the monolith into independent microservices (e.g., `User Service`, `Store Service`, `Rating Service`) communicating via gRPC or message queues (RabbitMQ/Kafka). This isolates faults and allows independent scaling.
+2. **Database Optimization:** 
+   Add read-replicas for PostgreSQL. Given that reading stores and ratings is more frequent than writing, separating Read/Write operations will significantly improve database throughput.
+3. **Caching Layer:** 
+   Implement a distributed caching layer using **Redis** to cache the results of frequently accessed, slow-changing endpoints like `/api/v1/stores`. This will reduce DB load.
+4. **Load Balancing & Containerization:** 
+   Containerize the application using **Docker** and orchestrate with Kubernetes. A load balancer (like NGINX or AWS ALB) can distribute incoming traffic evenly across multiple stateless instances of the API.
+
+# trade_assign

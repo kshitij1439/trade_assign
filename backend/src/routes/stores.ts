@@ -6,6 +6,18 @@ import { AuthRequest } from '../types';
 const router = Router();
 router.use(authenticate, authorize('NORMAL_USER'));
 
+/**
+ * @swagger
+ * /stores:
+ *   get:
+ *     summary: Get all stores with user ratings
+ *     tags: [Stores]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of stores
+ */
 router.get('/', async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { name, address, sortBy = 'name', sortOrder = 'asc' } = req.query as any;

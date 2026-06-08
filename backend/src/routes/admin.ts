@@ -7,6 +7,18 @@ import { AuthRequest } from '../types';
 const router = Router();
 router.use(authenticate, authorize('ADMIN'));
 
+/**
+ * @swagger
+ * /admin/stats:
+ *   get:
+ *     summary: Get dashboard stats
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Dashboard stats
+ */
 // Stats
 router.get('/stats', async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -62,6 +74,18 @@ router.post('/users', async (req: AuthRequest, res: Response): Promise<void> => 
   }
 });
 
+/**
+ * @swagger
+ * /admin/users:
+ *   get:
+ *     summary: Get all users
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of users
+ */
 // Get all users
 router.get('/users', async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -157,6 +181,18 @@ router.post('/stores', async (req: AuthRequest, res: Response): Promise<void> =>
   }
 });
 
+/**
+ * @swagger
+ * /admin/stores:
+ *   get:
+ *     summary: Get all stores
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of stores
+ */
 // Get all stores
 router.get('/stores', async (req: AuthRequest, res: Response): Promise<void> => {
   try {
